@@ -54,6 +54,19 @@ logs/
 .env.test.local
 .env.production.local
 
-# Large files and datasets (uncomment if needed)
-# data/raw_datasets/
-# large_data_files/ 
+# Large model files
+*.h5
+*.model
+*.pth
+*.pb
+app/models/brain_tumor_classifier.h5
+
+# Large data files
+# data/raw_datasets/ 
+
+# Database
+app/database/*.db
+app/database/patients.db
+
+# Uploads
+app/static/uploads/ 
