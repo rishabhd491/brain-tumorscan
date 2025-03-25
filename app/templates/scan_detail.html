@@ -452,7 +452,10 @@
                                 <a href="{{ url_for('generate_report', scan_id=scan.id) }}" class="btn btn-success mb-2">
                                     <i class="fa fa-file-pdf"></i> Download PDF Report
                                 </a>
-                                <a href="#" class="btn btn-info mb-2">
+                                <button id="print-report-btn" data-scan-id="{{ scan.id }}" class="btn btn-info mb-2">
+                                    <i class="fa fa-print"></i> Print Medical Report
+                                </button>
+                                <a href="#" class="btn btn-warning mb-2">
                                     <i class="fa fa-envelope"></i> Email Results to Patient
                                 </a>
                                 <a href="#" class="btn btn-warning mb-2">
@@ -477,6 +480,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/print_report.js') }}"></script>
 <script>
     // Initialize Bootstrap tabs with simpler and more direct code
     document.addEventListener('DOMContentLoaded', function() {

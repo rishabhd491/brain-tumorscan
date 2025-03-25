@@ -541,6 +541,38 @@ def generate_report(scan_id):
         download_name=filename
     )
 
+@app.route('/scans/<int:scan_id>/print_report')
+def print_report(scan_id):
+    """Generate and display a printable HTML report for a scan."""
+    if not patient_module_loaded or not report_generator_loaded:
+        flash("Report generation is not available.")
+        return redirect(url_for('patients'))
+    
+    # Get scan and patient data
+    scan = get_scan(scan_id)
+    
+    if not scan:
+        flash("Scan not found.")
+        return redirect(url_for('patients'))
+    
+    patient = get_patient(scan['patient_id'])
+    
+    if not patient:
+        flash("Patient not found.")
+        return redirect(url_for('patients'))
+    
+    # Get tumor information if available
+    tumor_info = None
+    if tumor_info_loaded and scan['tumor_type']:
+        tumor_info = get_tumor_info(scan['tumor_type'])
+    
+    # Render the printable report template
+    return render_template('print_report.html', 
+                          patient=patient,
+                          scan=scan,
+                          tumor_info=tumor_info,
+                          now=datetime.now())
+
 # Other routes
 
 @app.route('/about')
@@ -632,4 +664,4 @@ if __name__ == '__main__':
         logger.warning("Tumor information module not loaded.")
     
     # Run the app on port 5001 to avoid conflict with AirPlay on macOS
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0', port=5005)

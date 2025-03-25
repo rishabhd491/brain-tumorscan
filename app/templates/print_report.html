@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain MRI Scan Report - {{ patient.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        @media print {
+            @page {
+                size: A4;
+                margin: 1cm;
+            }
+            body {
+                font-size: 12pt;
+                line-height: 1.3;
+            }
+            .container {
+                width: 100%;
+                max-width: 100%;
+                padding: 0;
+                margin: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .page-break {
+                page-break-after: always;
+            }
+            .header {
+                position: fixed;
+                top: 0;
+                width: 100%;
+                border-bottom: 1px solid #ddd;
+                padding-bottom: 10px;
+            }
+            .footer {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+                border-top: 1px solid #ddd;
+                padding-top: 10px;
+                font-size: 9pt;
+            }
+            .content {
+                margin-top: 120px;
+                margin-bottom: 80px;
+            }
+        }
+        
+        .report-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .report-section {
+            margin-bottom: 20px;
+        }
+        .report-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-weight: bold;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .patient-info-table,
+        .scan-info-table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .patient-info-table th,
+        .scan-info-table th {
+            width: 30%;
+            text-align: left;
+            padding: 5px;
+            background-color: #f5f5f5;
+        }
+        .patient-info-table td,
+        .scan-info-table td {
+            width: 70%;
+            padding: 5px;
+        }
+        .scan-image {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .scan-image img {
+            max-width: 100%;
+            max-height: 400px;
+        }
+        .disclaimer {
+            font-size: 10pt;
+            font-style: italic;
+            margin-top: 30px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        .print-button {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Print Button (only visible in browser) -->
+        <div class="print-button no-print text-center">
+            <button class="btn btn-primary" onclick="window.print()">
+                <i class="fa fa-print"></i> Print Report
+            </button>
+        </div>
+        
+        <!-- Report Header -->
+        <div class="report-header">
+            <h1 class="report-title">Brain MRI Scan Report</h1>
+            <p>Report Date: {{ now.strftime("%B %d, %Y") }}</p>
+        </div>
+        
+        <!-- Report Content -->
+        <div class="content">
+            <!-- Patient Information -->
+            <div class="report-section">
+                <h3 class="section-title">Patient Information</h3>
+                <table class="patient-info-table">
+                    <tr>
+                        <th>Name:</th>
+                        <td>{{ patient.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Patient ID:</th>
+                        <td>{{ patient.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Age:</th>
+                        <td>{{ patient.age }} years</td>
+                    </tr>
+                    <tr>
+                        <th>Gender:</th>
+                        <td>{{ patient.gender }}</td>
+                    </tr>
+                    <tr>
+                        <th>Contact:</th>
+                        <td>{{ patient.contact }}</td>
+                    </tr>
+                    <tr>
+                        <th>Medical History:</th>
+                        <td>{{ patient.medical_history or 'None provided' }}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <!-- Scan Information -->
+            <div class="report-section">
+                <h3 class="section-title">Scan Information</h3>
+                <table class="scan-info-table">
+                    <tr>
+                        <th>Scan ID:</th>
+                        <td>{{ scan.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Scan Date:</th>
+                        <td>
+                            {% if scan.scan_date is defined %}
+                                {% if scan.scan_date is string %}
+                                    {{ scan.scan_date }}
+                                {% else %}
+                                    {{ scan.scan_date.strftime('%Y-%m-%d %H:%M') }}
+                                {% endif %}
+                            {% elif scan.date is defined %}
+                                {% if scan.date is string %}
+                                    {{ scan.date }}
+                                {% else %}
+                                    {{ scan.date.strftime('%Y-%m-%d %H:%M') if scan.date else 'Unknown date' }}
+                                {% endif %}
+                            {% else %}
+                                Date not available
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Predicted Tumor Type:</th>
+                        <td>{{ scan.tumor_type|title|replace('_', ' ') }}</td>
+                    </tr>
+                    <tr>
+                        <th>Confidence:</th>
+                        <td>{{ "%.1f"|format(scan.confidence * 100) }}%</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <!-- Scan Image -->
+            <div class="scan-image">
+                <h3 class="section-title">MRI Scan Image</h3>
+                <img src="{{ url_for('static', filename=scan.image_path, _external=True) }}" alt="MRI Scan">
+            </div>
+            
+            <!-- Tumor Information -->
+            {% if tumor_info and scan.tumor_type and scan.tumor_type != 'notumor' and scan.tumor_type != 'no_tumor' %}
+            <div class="report-section page-break">
+                <h3 class="section-title">Tumor Information</h3>
+                <p><strong>Type:</strong> {{ tumor_info.name }}</p>
+                <p><strong>Description:</strong> {{ tumor_info.description }}</p>
+                
+                <!-- Symptoms -->
+                <div>
+                    <h4>Symptoms</h4>
+                    {% if tumor_info.symptoms %}
+                    <ul>
+                        {% for symptom in tumor_info.symptoms %}
+                        <li>{{ symptom }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>No symptom information available.</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Treatments -->
+                <div>
+                    <h4>Treatment Options</h4>
+                    {% if tumor_info.treatment_options %}
+                    <ul>
+                        {% for treatment in tumor_info.treatment_options %}
+                        <li>{{ treatment }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>No treatment information available.</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Prognosis -->
+                <div>
+                    <h4>Prognosis</h4>
+                    <p>{{ tumor_info.prognosis }}</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Doctor's Notes -->
+            <div class="report-section">
+                <h3 class="section-title">Doctor's Notes</h3>
+                <p>{{ scan.doctor_notes or 'No notes provided.' }}</p>
+            </div>
+            
+            <!-- Disclaimer -->
+            <div class="disclaimer">
+                <p><strong>Disclaimer:</strong> This report is generated based on a machine learning model's analysis of the MRI scan.
+                The prediction should be verified by a qualified medical professional. This tool is intended to assist
+                healthcare providers and should not be used as the sole basis for diagnosis or treatment decisions.</p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="row">
+                <div class="col-6">
+                    <small>Brain Tumor Classification System</small>
+                </div>
+                <div class="col-6 text-end">
+                    <small>Page 1</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
