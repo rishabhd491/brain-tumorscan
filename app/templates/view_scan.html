@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Scan Details{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-brain me-2"></i>Scan Details</h3>
+                    <a href="{{ url_for('patient_detail', patient_id=scan.patient_id) }}" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Patient
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <!-- Scan Image Card -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5><i class="fas fa-image me-2"></i>MRI Scan</h5>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div class="bg-light p-3 rounded mb-3">
+                                        <img src="{{ url_for('static', filename='uploads/' + scan.image_path) }}" class="img-fluid rounded" alt="MRI Scan">
+                                    </div>
+                                    <div class="d-flex justify-content-between mt-3">
+                                        <small class="text-muted">Scan ID: {{ scan.id }}</small>
+                                        <small class="text-muted">
+                                            {{ scan.date.strftime('%B %d, %Y at %H:%M') if scan.date else 'Date not available' }}
+                                        </small>
+                                    </div>
+                                    <div class="d-grid gap-2 mt-3">
+                                        <a href="{{ url_for('download_scan', scan_id=scan.id) }}" class="btn btn-outline-primary">
+                                            <i class="fas fa-download me-1"></i> Download Image
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Patient Information Card -->
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h5><i class="fas fa-user-circle me-2"></i>Patient Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex mb-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="rounded-circle bg-light p-3 text-center" style="width: 60px; height: 60px;">
+                                                <i class="fas fa-user-circle fa-2x text-primary"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h5 class="mb-1">{{ patient.name }}</h5>
+                                            <p class="text-muted mb-0">{{ patient.age }} years, {{ patient.gender }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('patient_detail', patient_id=patient.id) }}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-user me-1"></i> View Patient Details
+                                        </a>
+                                        <a href="{{ url_for('scan_patient', patient_id=patient.id) }}" class="btn btn-outline-primary">
+                                            <i class="fas fa-plus-circle me-1"></i> Add New Scan
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Rest of the content -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

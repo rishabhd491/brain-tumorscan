@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Patient Details - {{ patient.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-user-circle me-2"></i>Patient Details</h3>
+                    <div>
+                        <a href="{{ url_for('patients') }}" class="btn btn-light me-2">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Patients
+                        </a>
+                        <a href="{{ url_for('scan_patient', patient_id=patient.id) }}" class="btn btn-success">
+                            <i class="fas fa-brain me-1"></i> New Scan
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <!-- Patient Information Card -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5><i class="fas fa-id-card me-2"></i>Patient Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex mb-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="rounded-circle bg-light p-3 text-center" style="width: 80px; height: 80px;">
+                                                <i class="fas fa-user-circle fa-3x text-primary"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3 pt-2">
+                                            <h4 class="mb-1">{{ patient.name }}</h4>
+                                            <p class="text-muted mb-0">ID: {{ patient.id }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted">Age</small>
+                                            <p>{{ patient.age }} years</p>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Gender</small>
+                                            <p>{{ patient.gender }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <small class="text-muted">Date Added</small>
+                                        <p>{{ patient.date_added.strftime('%B %d, %Y') if patient.date_added else 'Not available' }}</p>
+                                    </div>
+                                    
+                                    {% if patient.medical_history %}
+                                    <div class="mb-3">
+                                        <small class="text-muted">Medical History</small>
+                                        <p class="mb-0">{{ patient.medical_history }}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="d-grid gap-2 mt-4">
+                                        <a href="{{ url_for('edit_patient', patient_id=patient.id) }}" class="btn btn-outline-primary">
+                                            <i class="fas fa-edit me-1"></i> Edit Patient
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Analysis Summary Card (if scans exist) -->
+                            {% if scans %}
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5><i class="fas fa-chart-pie me-2"></i>Analysis Summary</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <small class="text-muted">Total Scans</small>
+                                        <p class="fs-4 fw-bold mb-0">{{ scans|length }}</p>
+                                    </div>
+                                    
+                                    {% set tumor_types = scans|map(attribute='tumor_type')|list %}
+                                    {% if tumor_types %}
+                                    <div class="mb-3">
+                                        <small class="text-muted">Last Diagnosis</small>
+                                        <p class="mb-0">
+                                            {% set last_tumor = scans[-1].tumor_type %}
+                                            <span class="badge {% if last_tumor == 'no_tumor' %}bg-success{% elif last_tumor == 'glioma' %}bg-danger{% elif last_tumor == 'meningioma' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %} fs-6">
+                                                {{ scans[-1].tumor_type|replace('_', ' ')|title }}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="d-grid gap-2 mt-4">
+                                        <a href="#" onclick="window.print()" class="btn btn-outline-secondary">
+                                            <i class="fas fa-print me-1"></i> Print Report
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <!-- Scan History Card -->
+                            <div class="card">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <h5><i class="fas fa-history me-2"></i>Scan History</h5>
+                                    <a href="{{ url_for('scan_patient', patient_id=patient.id) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-plus me-1"></i> New Scan
+                                    </a>
+                                </div>
+                                <div class="card-body">
+                                    {% if scans %}
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Diagnosis</th>
+                                                        <th>Confidence</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for scan in scans|reverse %}
+                                                    <tr>
+                                                        <td>{{ scan.date.strftime('%Y-%m-%d %H:%M') if scan.date else 'N/A' }}</td>
+                                                        <td>
+                                                            <span class="badge {% if scan.tumor_type == 'no_tumor' %}bg-success{% elif scan.tumor_type == 'glioma' %}bg-danger{% elif scan.tumor_type == 'meningioma' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+                                                                {{ scan.tumor_type|replace('_', ' ')|title }}
+                                                            </span>
+                                                        </td>
+                                                        <td>{{ "%.1f"|format(scan.confidence * 100) }}%</td>
+                                                        <td>
+                                                            <div class="btn-group btn-group-sm">
+                                                                <a href="{{ url_for('scan_detail', scan_id=scan.id) }}" class="btn btn-outline-primary">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </a>
+                                                                <a href="{{ url_for('generate_report', scan_id=scan.id) }}" class="btn btn-outline-secondary">
+                                                                    <i class="fas fa-file-pdf"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <div class="text-center py-5">
+                                            <div class="mb-3">
+                                                <i class="fas fa-brain fa-4x text-muted"></i>
+                                            </div>
+                                            <h5 class="text-muted">No Scans Available</h5>
+                                            <p>This patient has no MRI scans on record.</p>
+                                            <a href="{{ url_for('scan_patient', patient_id=patient.id) }}" class="btn btn-primary mt-2">
+                                                <i class="fas fa-plus-circle me-1"></i> Add First Scan
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if scans and scans|length > 0 %}
+                            <!-- Latest Scan Results (if available) -->
+                            <div class="card mt-4">
+                                <div class="card-header bg-light">
+                                    <h5><i class="fas fa-clipboard-list me-2"></i>Latest Scan Results</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <div class="bg-light p-3 rounded text-center mb-3">
+                                                <img src="{{ url_for('static', filename='uploads/' + scans[-1].image_path) }}" class="img-fluid rounded" alt="MRI Scan" style="max-height: 200px;">
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        Scan from {{ scans[-1].date.strftime('%B %d, %Y') if scans[-1].date else 'N/A' }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <h5>Diagnosis:</h5>
+                                            <div class="mb-3">
+                                                <span class="badge {% if scans[-1].tumor_type == 'no_tumor' %}bg-success{% elif scans[-1].tumor_type == 'glioma' %}bg-danger{% elif scans[-1].tumor_type == 'meningioma' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %} fs-5 mb-2">
+                                                    {{ scans[-1].tumor_type|replace('_', ' ')|title }}
+                                                </span>
+                                                <div class="progress mt-2">
+                                                    <div class="progress-bar 
+                                                        {% if scans[-1].tumor_type == 'no_tumor' %}bg-success{% elif scans[-1].tumor_type == 'glioma' %}bg-danger{% elif scans[-1].tumor_type == 'meningioma' %}bg-warning{% else %}bg-info{% endif %}" 
+                                                        role="progressbar" 
+                                                        style="width: {{ scans[-1].confidence * 100 }}%"
+                                                        aria-valuenow="{{ scans[-1].confidence * 100 }}" 
+                                                        aria-valuemin="0" 
+                                                        aria-valuemax="100">
+                                                        {{ "%.1f"|format(scans[-1].confidence * 100) }}%
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">Confidence Score</small>
+                                            </div>
+                                            
+                                            {% if scans[-1].notes %}
+                                            <div class="mb-3">
+                                                <h6>Notes:</h6>
+                                                <p class="mb-0">{{ scans[-1].notes }}</p>
+                                            </div>
+                                            {% endif %}
+                                            
+                                            <div class="mt-3">
+                                                <a href="{{ url_for('scan_detail', scan_id=scans[-1].id) }}" class="btn btn-primary">
+                                                    <i class="fas fa-search-plus me-1"></i> View Full Details
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,128 @@
+{% extends "layout.html" %}
+
+{% block title %}Patient Registration{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="card-title mb-0">
+                        {% if patient %}
+                        Edit Patient Information
+                        {% else %}
+                        New Patient Registration
+                        {% endif %}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('register_patient') }}" class="needs-validation" novalidate>
+                        {% if patient %}
+                        <input type="hidden" name="patient_id" value="{{ patient.id }}">
+                        {% endif %}
+                        
+                        <div class="form-group row mb-3">
+                            <label for="name" class="col-sm-3 col-form-label">Full Name <span class="text-danger">*</span></label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       value="{{ patient.name if patient else '' }}" required>
+                                <div class="invalid-feedback">
+                                    Please provide patient's full name.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mb-3">
+                            <label for="age" class="col-sm-3 col-form-label">Age <span class="text-danger">*</span></label>
+                            <div class="col-sm-9">
+                                <input type="number" class="form-control" id="age" name="age" min="0" max="120"
+                                       value="{{ patient.age if patient else '' }}" required>
+                                <div class="invalid-feedback">
+                                    Please provide a valid age.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mb-3">
+                            <label for="gender" class="col-sm-3 col-form-label">Gender <span class="text-danger">*</span></label>
+                            <div class="col-sm-9">
+                                <select class="form-control" id="gender" name="gender" required>
+                                    <option value="" disabled selected>Select gender</option>
+                                    <option value="Male" {% if patient and patient.gender == 'Male' %}selected{% endif %}>Male</option>
+                                    <option value="Female" {% if patient and patient.gender == 'Female' %}selected{% endif %}>Female</option>
+                                    <option value="Other" {% if patient and patient.gender == 'Other' %}selected{% endif %}>Other</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select a gender.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mb-3">
+                            <label for="contact" class="col-sm-3 col-form-label">Contact Number</label>
+                            <div class="col-sm-9">
+                                <input type="tel" class="form-control" id="contact" name="contact"
+                                       value="{{ patient.contact if patient else '' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mb-3">
+                            <label for="email" class="col-sm-3 col-form-label">Email</label>
+                            <div class="col-sm-9">
+                                <input type="email" class="form-control" id="email" name="email"
+                                       value="{{ patient.email if patient else '' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mb-3">
+                            <label for="address" class="col-sm-3 col-form-label">Address</label>
+                            <div class="col-sm-9">
+                                <textarea class="form-control" id="address" name="address" rows="3">{{ patient.address if patient else '' }}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mb-3">
+                            <label for="medical_history" class="col-sm-3 col-form-label">Medical History</label>
+                            <div class="col-sm-9">
+                                <textarea class="form-control" id="medical_history" name="medical_history" rows="4">{{ patient.medical_history if patient else '' }}</textarea>
+                                <small class="form-text text-muted">
+                                    Include any relevant medical history, allergies, or pre-existing conditions.
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row">
+                            <div class="col-sm-9 offset-sm-3">
+                                <button type="submit" class="btn btn-primary">
+                                    {% if patient %}Update{% else %}Register{% endif %} Patient
+                                </button>
+                                <a href="{{ url_for('patients') }}" class="btn btn-secondary">Cancel</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+{% endblock %} 

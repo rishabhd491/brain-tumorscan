@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}Patients List{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-users me-2"></i>Patients List (In-Memory)</h3>
+                    <div>
+                        <a href="{{ url_for('refresh_patients_route') }}" class="btn btn-light me-2">
+                            <i class="fas fa-sync-alt me-1"></i> Refresh List
+                        </a>
+                        <a href="{{ url_for('register_patient') }}" class="btn btn-success">
+                            <i class="fas fa-user-plus me-1"></i> Add New Patient
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <!-- Search Form -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" id="patientSearch" class="form-control" placeholder="Search patients..." aria-label="Search patients">
+                                <button class="btn btn-outline-primary" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <span class="text-muted">Total patients: <span class="fw-bold">{{ patients|length }}</span></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Patients Table -->
+                    {% if patients %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Age/Gender</th>
+                                        <th>Scans</th>
+                                        <th>Last Diagnosis</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for patient in patients %}
+                                    <tr class="patient-row">
+                                        <td>{{ patient.id }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0">
+                                                    <div class="rounded-circle bg-light p-2 text-center" style="width: 40px; height: 40px;">
+                                                        <i class="fas fa-user-circle text-primary"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1 ms-2">
+                                                    <h6 class="mb-0">{{ patient.name }}</h6>
+                                                    {% if patient.contact %}
+                                                    <small class="text-muted">{{ patient.contact }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ patient.age }} / {{ patient.gender }}</td>
+                                        <td>
+                                            <span class="badge bg-info rounded-pill">{{ patient.scan_count }}</span>
+                                        </td>
+                                        <td>
+                                            {% if patient.latest_scan %}
+                                                <span class="badge {% if patient.latest_scan.tumor_type == 'no_tumor' %}bg-success{% elif patient.latest_scan.tumor_type == 'glioma' %}bg-danger{% elif patient.latest_scan.tumor_type == 'meningioma' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+                                                    {{ patient.latest_scan.tumor_type|replace('_', ' ')|title }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">No scans</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="patient-actions">
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('patient_detail', patient_id=patient.id) }}" class="btn btn-outline-primary" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('scan_patient', patient_id=patient.id) }}" class="btn btn-outline-success" title="New Scan">
+                                                    <i class="fas fa-brain"></i>
+                                                </a>
+                                                <a href="{{ url_for('edit_patient', patient_id=patient.id) }}" class="btn btn-outline-secondary" title="Edit Patient">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="fas fa-users fa-4x text-muted"></i>
+                            </div>
+                            <h5 class="text-muted">No Patients Available</h5>
+                            <p>There are no patients in the in-memory list.</p>
+                            <div class="mt-3">
+                                <a href="{{ url_for('refresh_patients_route') }}" class="btn btn-primary me-2">
+                                    <i class="fas fa-sync-alt me-1"></i> Refresh List
+                                </a>
+                                <a href="{{ url_for('register_patient') }}" class="btn btn-success">
+                                    <i class="fas fa-user-plus me-1"></i> Register New Patient
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- API Information Card -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-light">
+                            <h5><i class="fas fa-code me-2"></i>API Access</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>You can access the patients list programmatically through the API:</p>
+                            <div class="mb-3">
+                                <h6>Get All Patients:</h6>
+                                <code>GET /api/patients</code>
+                            </div>
+                            <div>
+                                <h6>Get Specific Patient:</h6>
+                                <code>GET /api/patients/{patient_id}</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+    // Patient search functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('patientSearch');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                const patientRows = document.querySelectorAll('tbody tr.patient-row');
+                
+                patientRows.forEach(row => {
+                    const patientText = row.textContent.toLowerCase();
+                    if (patientText.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %} 

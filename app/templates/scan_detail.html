@@ -1,0 +1,520 @@
+{% extends "base.html" %}
+
+{% block title %}Scan Results{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Scan Results</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('patient_detail', patient_id=patient.id) }}" class="btn btn-secondary">
+                <i class="fa fa-arrow-left"></i> Back to Patient
+            </a>
+        </div>
+    </div>
+
+    {% if scan and patient %}
+    <div class="row">
+        <!-- Patient Information Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Patient Information</h4>
+                </div>
+                <div class="card-body">
+                    <h3 class="mb-3">{{ patient.name }}</h3>
+                    
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">ID:</span>
+                            <span>{{ patient.id }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Age:</span>
+                            <span>{{ patient.age }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Gender:</span>
+                            <span>{{ patient.gender }}</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-3 text-center">
+                        <a href="{{ url_for('patient_detail', patient_id=patient.id) }}" class="btn btn-outline-primary">
+                            <i class="fa fa-user"></i> Full Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Scan Image Card -->
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h4 class="card-title mb-0">MRI Scan Image</h4>
+                </div>
+                <div class="card-body text-center">
+                    <img src="{{ url_for('static', filename=scan.image_path) }}" 
+                         alt="MRI Scan" class="img-fluid rounded">
+                    <p class="mt-2 text-muted">
+                        {% if scan.scan_date is defined %}
+                            {% if scan.scan_date is string %}
+                                Scan taken on {{ scan.scan_date }}
+                            {% else %}
+                                Scan taken on {{ scan.scan_date.strftime('%Y-%m-%d %H:%M') }}
+                            {% endif %}
+                        {% elif scan.date is defined %}
+                            {% if scan.date is string %}
+                                Scan taken on {{ scan.date }}
+                            {% else %}
+                                Scan taken on {{ scan.date.strftime('%Y-%m-%d %H:%M') if scan.date else 'Unknown date' }}
+                            {% endif %}
+                        {% else %}
+                            Scan date not available
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Diagnosis and Disease Information -->
+        <div class="col-md-8 mb-4">
+            <!-- Diagnosis Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header {{ 'bg-success' if scan.tumor_type == 'notumor' else 'bg-warning' }} text-white">
+                    <h4 class="card-title mb-0">Diagnosis</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h2>
+                                {% if scan.tumor_type %}
+                                {{ scan.tumor_type|title }}
+                                {% else %}
+                                No diagnosis available
+                                {% endif %}
+                            </h2>
+                            
+                            {% if scan.confidence %}
+                            <div class="progress mt-2 mb-3" style="height: 25px;">
+                                <div class="progress-bar {{ 'bg-success' if scan.confidence > 0.8 else 'bg-warning' }}" 
+                                     role="progressbar" 
+                                     style="width: {{ scan.confidence * 100 }}%" 
+                                     aria-valuenow="{{ scan.confidence * 100 }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ "%.1f"|format(scan.confidence * 100) }}% Confidence
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <p class="lead">
+                                {{ tumor_info.description if tumor_info else "No detailed information available for this diagnosis." }}
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="display-1 mb-2">
+                                {% if scan.tumor_type == 'glioma' %}
+                                <i class="fa fa-brain text-danger"></i>
+                                {% elif scan.tumor_type == 'meningioma' %}
+                                <i class="fa fa-brain text-warning"></i>
+                                {% elif scan.tumor_type == 'pituitary' %}
+                                <i class="fa fa-brain text-info"></i>
+                                {% elif scan.tumor_type == 'notumor' %}
+                                <i class="fa fa-check-circle text-success"></i>
+                                {% else %}
+                                <i class="fa fa-question-circle text-secondary"></i>
+                                {% endif %}
+                            </div>
+                            <div class="mt-2">
+                                <p class="text-muted">Scan ID: {{ scan.id }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if scan.doctor_notes %}
+                    <div class="mt-4">
+                        <h5>Doctor's Notes</h5>
+                        <div class="p-3 bg-light rounded">
+                            {{ scan.doctor_notes|safe }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Disease Information Card -->
+            {% if tumor_info and scan.tumor_type and scan.tumor_type != 'notumor' and scan.tumor_type != 'no_tumor' %}
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0"><i class="fa fa-info-circle me-2"></i>{{ tumor_info.name }} Information</h4>
+                    <span class="badge bg-light text-dark">Educational Information</span>
+                </div>
+                <div class="card-body">
+                    <!-- Introduction section -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2"><i class="fa fa-book-medical me-2"></i>About This Condition</h5>
+                        <p class="lead">{{ tumor_info.description }}</p>
+                        
+                        <div class="alert alert-light border mt-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fa fa-lightbulb fa-2x text-warning me-3"></i>
+                                </div>
+                                <div>
+                                    <h6 class="alert-heading">Key Information</h6>
+                                    <p class="mb-0">{{ tumor_info.name }} represents approximately 
+                                    {% if scan.tumor_type == 'glioma' %}30% of all brain tumors and 80% of malignant brain tumors.
+                                    {% elif scan.tumor_type == 'meningioma' %}37% of all brain tumors and are mostly benign.
+                                    {% elif scan.tumor_type == 'pituitary' %}16% of all brain tumors and are rarely cancerous.
+                                    {% else %}a significant portion of brain tumors.
+                                    {% endif %}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Types & Classification section -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2"><i class="fa fa-project-diagram me-2"></i>Types & Classification</h5>
+                        {% if tumor_info.types %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ul class="list-group">
+                                    {% for type in tumor_info.types %}
+                                    <li class="list-group-item">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0">
+                                                <i class="fa fa-check-circle text-success me-2"></i>
+                                            </div>
+                                            <div>{{ type }}</div>
+                                        </div>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p>No classification information available for this tumor type.</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Tabs for detailed information -->
+                    <div class="mb-4">
+                        <ul class="nav nav-tabs" id="tumorInfoTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="symptoms-tab" data-bs-toggle="tab" data-bs-target="#symptoms" 
+                                        type="button" role="tab" aria-controls="symptoms" aria-selected="true">
+                                    <i class="fa fa-stethoscope me-1"></i> Symptoms
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="risk-factors-tab" data-bs-toggle="tab" data-bs-target="#risk-factors" 
+                                        type="button" role="tab" aria-controls="risk-factors" aria-selected="false">
+                                    <i class="fa fa-exclamation-triangle me-1"></i> Risk Factors
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="treatment-tab" data-bs-toggle="tab" data-bs-target="#treatment" 
+                                        type="button" role="tab" aria-controls="treatment" aria-selected="false">
+                                    <i class="fa fa-procedures me-1"></i> Treatment
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="prognosis-tab" data-bs-toggle="tab" data-bs-target="#prognosis" 
+                                        type="button" role="tab" aria-controls="prognosis" aria-selected="false">
+                                    <i class="fa fa-chart-line me-1"></i> Prognosis
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content p-3 border border-top-0 rounded-bottom" id="tumorInfoTabContent">
+                            <!-- Symptoms tab -->
+                            <div class="tab-pane fade show active" id="symptoms" role="tabpanel" aria-labelledby="symptoms-tab">
+                                <h6 class="mb-3">Common Symptoms</h6>
+                                {% if tumor_info.symptoms %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <ul class="list-group">
+                                            {% for symptom in tumor_info.symptoms %}
+                                            <li class="list-group-item">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="flex-shrink-0">
+                                                        <i class="fa fa-arrow-right text-primary me-2"></i>
+                                                    </div>
+                                                    <div>{{ symptom }}</div>
+                                                </div>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                        <div class="alert alert-warning mt-3">
+                                            <i class="fa fa-info-circle me-2"></i>
+                                            Symptoms may vary based on tumor size, location, and rate of growth. Not everyone experiences all symptoms.
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <p>No symptom information available.</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Risk Factors tab -->
+                            <div class="tab-pane fade" id="risk-factors" role="tabpanel" aria-labelledby="risk-factors-tab">
+                                <h6 class="mb-3">Known Risk Factors</h6>
+                                {% if tumor_info.risk_factors %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <ul class="list-group">
+                                            {% for factor in tumor_info.risk_factors %}
+                                            <li class="list-group-item">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="flex-shrink-0">
+                                                        <i class="fa fa-arrow-right text-primary me-2"></i>
+                                                    </div>
+                                                    <div>{{ factor }}</div>
+                                                </div>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                        <div class="alert alert-info mt-3">
+                                            <i class="fa fa-info-circle me-2"></i>
+                                            Having risk factors does not guarantee that someone will develop this tumor type. Many people with risk factors never develop tumors, and others without risk factors do.
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <p>No risk factor information available.</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Treatment tab -->
+                            <div class="tab-pane fade" id="treatment" role="tabpanel" aria-labelledby="treatment-tab">
+                                <h6 class="mb-3">Treatment Options</h6>
+                                {% if tumor_info.treatment_options %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <ul class="list-group">
+                                            {% for treatment in tumor_info.treatment_options %}
+                                            <li class="list-group-item">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="flex-shrink-0">
+                                                        <i class="fa fa-arrow-right text-primary me-2"></i>
+                                                    </div>
+                                                    <div>{{ treatment }}</div>
+                                                </div>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                        <div class="alert alert-info mt-3">
+                                            <i class="fa fa-info-circle me-2"></i>
+                                            Treatment plans are individualized based on tumor type, grade, location, size, and patient factors like age and overall health. Consult with medical specialists to determine the best approach.
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <p>No treatment information available.</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Prognosis tab -->
+                            <div class="tab-pane fade" id="prognosis" role="tabpanel" aria-labelledby="prognosis-tab">
+                                <h6 class="mb-3">Prognosis & Outlook</h6>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="p-3 bg-light rounded">
+                                            {{ tumor_info.prognosis }}
+                                        </div>
+                                        
+                                        <div class="alert alert-warning mt-3">
+                                            <i class="fa fa-info-circle me-2"></i>
+                                            Prognosis information is based on population statistics and may not predict individual outcomes. Many factors influence prognosis, including treatment response and individual health factors.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Research & References -->
+                    <div class="mt-4">
+                        <h5 class="border-bottom pb-2"><i class="fa fa-flask me-2"></i>Research & References</h5>
+                        
+                        {% if tumor_info.sources %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <p class="mb-2">Learn more about {{ tumor_info.name }} from these trusted sources:</p>
+                                <ul class="list-group">
+                                    {% for source in tumor_info.sources %}
+                                    <li class="list-group-item">
+                                        <a href="{{ source }}" target="_blank" class="text-decoration-none">
+                                            <i class="fa fa-external-link-alt me-2"></i>{{ source }}
+                                        </a>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p>No reference information available.</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Disclaimer -->
+                    <div class="alert alert-secondary mt-4">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="fa fa-info-circle fa-2x me-3"></i>
+                            </div>
+                            <div>
+                                <h6 class="alert-heading">Medical Disclaimer</h6>
+                                <p class="mb-0">This information is for educational purposes only and should not replace consultation with healthcare professionals. Treatment decisions should be made in partnership with medical providers specializing in brain tumors.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- No Tumor Card -->
+            {% if scan.tumor_type == 'notumor' %}
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="card-title mb-0">Healthy Brain Scan</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fa fa-check-circle fa-4x text-success"></i>
+                        <h3 class="mt-3">No Tumor Detected</h3>
+                        <p class="lead">The scan shows no evidence of brain tumors.</p>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h5><i class="fa fa-info-circle"></i> Important Note</h5>
+                        <p>
+                            While no tumor has been detected in this scan, it is still important to:
+                        </p>
+                        <ul>
+                            <li>Continue regular health check-ups</li>
+                            <li>Report any new or persistent neurological symptoms to your healthcare provider</li>
+                            <li>Follow up as recommended by your doctor</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <a href="{{ url_for('generate_report', scan_id=scan.id) }}" class="btn btn-outline-success">
+                            <i class="fa fa-file-pdf"></i> Download Report
+                        </a>
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fa fa-calendar"></i> Schedule Follow-up
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Doctor Actions and Notes -->
+    <div class="row mt-2">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Doctor's Actions</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Temporary Debug Info - REMOVE IN PRODUCTION -->
+                    <div class="alert alert-secondary mb-3" style="font-family: monospace; font-size: 0.9em;">
+                        <h6>Debug Information</h6>
+                        <ul class="mb-0">
+                            <li>Tumor Type: {{ scan.tumor_type if scan.tumor_type else 'Not available' }}</li>
+                            <li>Tumor Info Available: {{ 'Yes' if tumor_info else 'No' }}</li>
+                            {% if tumor_info %}
+                            <li>Tumor Info Name: {{ tumor_info.name }}</li>
+                            <li>Number of Symptoms: {{ tumor_info.symptoms|length if tumor_info.symptoms else '0' }}</li>
+                            <li>Number of Treatments: {{ tumor_info.treatment_options|length if tumor_info.treatment_options else '0' }}</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form method="POST" action="{{ url_for('update_scan_notes', scan_id=scan.id) }}">
+                                <div class="form-group mb-3">
+                                    <label for="doctor_notes">Add/Update Medical Notes</label>
+                                    <textarea class="form-control" id="doctor_notes" name="doctor_notes" rows="4">{{ scan.doctor_notes or '' }}</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Notes</button>
+                            </form>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('generate_report', scan_id=scan.id) }}" class="btn btn-success mb-2">
+                                    <i class="fa fa-file-pdf"></i> Download PDF Report
+                                </a>
+                                <a href="#" class="btn btn-info mb-2">
+                                    <i class="fa fa-envelope"></i> Email Results to Patient
+                                </a>
+                                <a href="#" class="btn btn-warning mb-2">
+                                    <i class="fa fa-user-md"></i> Refer to Specialist
+                                </a>
+                                <a href="{{ url_for('scan_patient', patient_id=patient.id) }}" class="btn btn-secondary">
+                                    <i class="fa fa-redo"></i> Perform New Scan
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-danger">
+        Scan data not found. <a href="{{ url_for('patients') }}" class="alert-link">Return to patient list</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Initialize Bootstrap tabs with simpler and more direct code
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show symptoms tab by default when page loads
+        if (document.querySelector('#symptoms')) {
+            document.querySelector('#symptoms').classList.add('show', 'active');
+        }
+        
+        // Add click event to all tab buttons
+        var tabButtons = document.querySelectorAll('[data-bs-toggle="tab"]');
+        tabButtons.forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all buttons and panes
+                tabButtons.forEach(function(btn) {
+                    btn.classList.remove('active');
+                });
+                document.querySelectorAll('.tab-pane').forEach(function(pane) {
+                    pane.classList.remove('show', 'active');
+                });
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Show corresponding tab content
+                var targetId = this.getAttribute('data-bs-target');
+                var targetPane = document.querySelector(targetId);
+                if (targetPane) {
+                    targetPane.classList.add('show', 'active');
+                }
+            });
+        });
+        
+        // For debugging purposes
+        console.log('Tumor Info Summary:');
+        console.log('- Available:', {{ 'true' if tumor_info else 'false' }});
+        console.log('- Tumor Type:', '{{ scan.tumor_type }}');
+    });
+</script>
+{% endblock %} 

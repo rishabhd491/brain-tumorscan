@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Brain Tumor MRI Classifier</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-brain me-2"></i>Brain Tumor MRI Classifier
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/about"><i class="fas fa-info-circle me-1"></i> About</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h3><i class="fas fa-info-circle me-2"></i>About This Project</h3>
+                    </div>
+                    <div class="card-body">
+                        <h4>Brain Tumor MRI Classification</h4>
+                        <p class="lead">This web application uses deep learning to classify brain tumor MRI scans into four categories: Glioma, Meningioma, Pituitary tumor, or No tumor.</p>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="about-section">
+                                    <h5><i class="fas fa-brain me-2"></i>Brain Tumor Types</h5>
+                                    <div class="tumor-type-card">
+                                        <h6>Glioma</h6>
+                                        <p>A tumor that starts in the glial cells of the brain or the spine. Glial cells are the cells that surround and support neurons. Gliomas comprise about 30% of all brain tumors and central nervous system tumors, and 80% of all malignant brain tumors.</p>
+                                    </div>
+                                    <div class="tumor-type-card">
+                                        <h6>Meningioma</h6>
+                                        <p>A tumor that forms on the membranes that cover the brain and spinal cord just inside the skull. These tumors are usually benign (not cancerous). They occur more commonly in women and account for about 30% of all brain tumors.</p>
+                                    </div>
+                                    <div class="tumor-type-card">
+                                        <h6>Pituitary Tumor</h6>
+                                        <p>A growth that develops in the pituitary gland, which is a small, bean-shaped gland situated at the base of the brain. Most pituitary tumors are benign and don't spread to other parts of the body. However, they can cause the pituitary gland to produce either too many or too few hormones.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="about-section">
+                                    <h5><i class="fas fa-cogs me-2"></i>Technology Used</h5>
+                                    <ul class="tech-list">
+                                        <li><strong>Deep Learning:</strong> MobileNetV2 CNN architecture</li>
+                                        <li><strong>Backend:</strong> Python, Flask, TensorFlow, Keras</li>
+                                        <li><strong>Frontend:</strong> HTML, CSS, JavaScript, Bootstrap</li>
+                                        <li><strong>Dataset:</strong> Over 7,000 MRI images across four categories</li>
+                                        <li><strong>Training:</strong> Transfer learning with fine-tuning</li>
+                                    </ul>
+                                    
+                                    <h5 class="mt-4"><i class="fas fa-chart-line me-2"></i>Model Performance</h5>
+                                    <p>The model has been trained on a dataset of brain MRI scans with the following distribution:</p>
+                                    <ul>
+                                        <li>Training images: {{ 5712 }} images</li>
+                                        <li>Testing images: {{ 1311 }} images</li>
+                                    </ul>
+                                    
+                                    {% if model_summary %}
+                                        <div class="mt-3">
+                                            <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#modelSummary">
+                                                Show Model Architecture Details
+                                            </button>
+                                            <div class="collapse mt-2" id="modelSummary">
+                                                <div class="card card-body">
+                                                    <pre class="model-summary">{{ model_summary }}</pre>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="about-section">
+                                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Disclaimer</h5>
+                                    <div class="alert alert-warning">
+                                        <p>This application is for educational and demonstration purposes only. It is not intended to be used for medical diagnosis.</p>
+                                        <p>The predictions made by this system should not be used as a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of a qualified healthcare provider with any questions you may have regarding a medical condition.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if path_exists('app/static/training_history.png') and path_exists('app/static/confusion_matrix.png') %}
+                            <div class="row mt-4">
+                                <div class="col-md-12">
+                                    <div class="about-section">
+                                        <h5><i class="fas fa-chart-bar me-2"></i>Model Training Results</h5>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="card">
+                                                    <div class="card-header">Training History</div>
+                                                    <div class="card-body">
+                                                        <img src="{{ url_for('static', filename='training_history.png') }}" class="img-fluid" alt="Training History">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card">
+                                                    <div class="card-header">Confusion Matrix</div>
+                                                    <div class="card-body">
+                                                        <img src="{{ url_for('static', filename='confusion_matrix.png') }}" class="img-fluid" alt="Confusion Matrix">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">© 2023 Brain Tumor MRI Classification System | Powered by TensorFlow and Flask</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
