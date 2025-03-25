@@ -104,4 +104,4 @@ The model is trained on the following dataset:
 
 ## Disclaimer
 
-This application is for educational and demonstration purposes only. It is not intended to be used for medical diagnosis. The predictions made by this system should not be used as a substitute for professional medical advice, diagnosis, or treatment. 
+This application is for educational and demonstration purposes only. It is not intended to be used for medical diagnosis. The predictions made by this system should not be used as a substitute for professional medical advice, diagnosis, or treatment.
