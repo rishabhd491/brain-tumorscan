@@ -54,6 +54,11 @@ def load_brain_tumor_model():
         else:
             raise FileNotFoundError(f"Model file not found at {model_path} or alternate locations. Please train the model first.")
     
+    # Check if the file is an empty placeholder (created by our build script)
+    if os.path.getsize(model_path) == 0:
+        print(f"Warning: Model file at {model_path} is empty (placeholder). Prediction functionality will be disabled.")
+        raise ValueError("Empty model file detected. This is a placeholder - actual model needs to be trained.")
+    
     try:
         # First try to load with custom objects for the custom loss function
         model = load_model(model_path, custom_objects={

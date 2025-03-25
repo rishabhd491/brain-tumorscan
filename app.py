@@ -16,28 +16,58 @@ logger = logging.getLogger(__name__)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
 
+# Add app directory to path for proper imports
+app_dir = os.path.join(current_dir, 'app')
+if os.path.exists(app_dir) and app_dir not in sys.path:
+    sys.path.insert(0, app_dir)
+
+# Add models directory to path
+models_dir = os.path.join(current_dir, 'app', 'models')
+if os.path.exists(models_dir) and models_dir not in sys.path:
+    sys.path.insert(0, models_dir)
+
+# Add utils directory to path
+utils_dir = os.path.join(current_dir, 'app', 'utils')
+if os.path.exists(utils_dir) and utils_dir not in sys.path:
+    sys.path.insert(0, utils_dir)
+
+# Print paths for debugging (only when deploying)
+if 'RENDER' in os.environ:
+    print("Python path:", sys.path)
+    print("Current directory:", current_dir)
+    print("App directory:", app_dir)
+    print("Models directory:", models_dir)
+    print("Utils directory:", utils_dir)
+
 # Suppress TensorFlow logging except for errors
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 tf.get_logger().setLevel('ERROR')
 
 # Import prediction module
 try:
-    # Direct import instead of from app.models
+    # First attempt - normal import
     from app.models.predict import load_brain_tumor_model, predict_tumor_type
     model_loaded = True
 except Exception as e:
     logger.error(f"Error loading model: {e}")
-    # Alternative direct import method if the above fails
+    # Second attempt - direct import
     try:
-        sys.path.append(os.path.join(current_dir, 'app', 'models'))
         from predict import load_brain_tumor_model, predict_tumor_type
         model_loaded = True
     except Exception as e:
         logger.error(f"Second attempt failed: {e}")
-        model_loaded = False
+        # Third attempt - add path and import
+        try:
+            sys.path.append(os.path.join(current_dir, 'app', 'models'))
+            from predict import load_brain_tumor_model, predict_tumor_type
+            model_loaded = True
+        except Exception as e:
+            logger.error(f"Third attempt failed: {e}")
+            model_loaded = False
 
 # Import patient management module
 try:
+    # First attempt
     from app.models.patient import (
         init_db, add_patient, add_scan, get_patient, get_patient_scans,
         get_all_patients, search_patients, get_scan, update_scan
@@ -45,8 +75,8 @@ try:
     patient_module_loaded = True
 except Exception as e:
     logger.error(f"Error loading patient module: {e}")
+    # Second attempt
     try:
-        sys.path.append(os.path.join(current_dir, 'app', 'models'))
         from patient import (
             init_db, add_patient, add_scan, get_patient, get_patient_scans,
             get_all_patients, search_patients, get_scan, update_scan
@@ -54,7 +84,17 @@ except Exception as e:
         patient_module_loaded = True
     except Exception as e:
         logger.error(f"Second attempt failed for patient module: {e}")
-        patient_module_loaded = False
+        # Third attempt
+        try:
+            sys.path.append(os.path.join(current_dir, 'app', 'models'))
+            from patient import (
+                init_db, add_patient, add_scan, get_patient, get_patient_scans,
+                get_all_patients, search_patients, get_scan, update_scan
+            )
+            patient_module_loaded = True
+        except Exception as e:
+            logger.error(f"Third attempt failed for patient module: {e}")
+            patient_module_loaded = False
 
 # Import tumor information module
 try:
