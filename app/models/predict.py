@@ -37,9 +37,22 @@ def weighted_categorical_crossentropy():
 
 def load_brain_tumor_model():
     """Load the trained brain tumor classification model."""
+    # First try the local path
     model_path = os.path.join(os.path.dirname(__file__), 'brain_tumor_classifier.h5')
+    
+    # If not found, try alternate paths
     if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Model file not found at {model_path}. Please train the model first.")
+        # Try absolute path
+        alt_path = os.path.join(os.getcwd(), 'app', 'models', 'brain_tumor_classifier.h5')
+        if os.path.exists(alt_path):
+            model_path = alt_path
+            print(f"Using alternate model path: {model_path}")
+        # Try other variants if needed
+        elif os.path.exists('app/models/brain_tumor_classifier.h5'):
+            model_path = 'app/models/brain_tumor_classifier.h5'
+            print(f"Using direct path: {model_path}")
+        else:
+            raise FileNotFoundError(f"Model file not found at {model_path} or alternate locations. Please train the model first.")
     
     try:
         # First try to load with custom objects for the custom loss function
@@ -47,6 +60,7 @@ def load_brain_tumor_model():
             'loss': weighted_categorical_crossentropy(),
             'weighted_categorical_crossentropy': weighted_categorical_crossentropy
         })
+        print(f"Model loaded successfully from {model_path}")
     except Exception as e:
         print(f"Error loading with custom loss: {e}")
         # Fallback: try to load with compile=False and then recompile
@@ -57,6 +71,7 @@ def load_brain_tumor_model():
                 loss='categorical_crossentropy',
                 metrics=['accuracy']
             )
+            print("Model loaded with fallback method")
         except Exception as e:
             raise Exception(f"Failed to load model: {e}")
     

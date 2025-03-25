@@ -91,7 +91,13 @@ app = Flask(__name__,
 
 # Configure app
 app.config['SECRET_KEY'] = os.urandom(24)
-app.config['UPLOAD_FOLDER'] = os.path.join('app', 'static', 'uploads')
+
+# Set upload folder - use Render disk mountpoint if available
+if 'RENDER' in os.environ:
+    app.config['UPLOAD_FOLDER'] = '/opt/render/project/src/app/static/uploads'
+else:
+    app.config['UPLOAD_FOLDER'] = os.path.join('app', 'static', 'uploads')
+
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload size
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
 app.config['PATIENTS_PER_PAGE'] = 10  # Pagination setting
@@ -99,6 +105,24 @@ app.config['PATIENTS_PER_PAGE'] = 10  # Pagination setting
 # Ensure required directories exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(os.path.join('app', 'database'), exist_ok=True)
+
+# For Render deployment: If we're on Render, ensure paths are correct
+if 'RENDER' in os.environ:
+    logger.info("Running on Render. Setting up environment...")
+    # Log the current working directory for debugging
+    logger.info(f"Current working directory: {os.getcwd()}")
+    # Force create the upload and database directories with absolute paths
+    render_upload_path = os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'])
+    render_db_path = os.path.join(os.getcwd(), 'app', 'database')
+    logger.info(f"Creating upload directory at: {render_upload_path}")
+    logger.info(f"Creating database directory at: {render_db_path}")
+    os.makedirs(render_upload_path, exist_ok=True)
+    os.makedirs(render_db_path, exist_ok=True)
+    
+    # Update static URL path for Render
+    app.static_url_path = '/static'
+    app.static_folder = os.path.join(os.getcwd(), 'app/static')
+    logger.info(f"Static folder set to: {app.static_folder}")
 
 # Add path_exists function to Jinja environment
 @app.context_processor
@@ -163,6 +187,8 @@ if model_loaded:
         logger.info("Model loaded successfully")
     except Exception as e:
         logger.error(f"Failed to load model: {e}")
+        # Don't crash the app if model loading fails - we'll handle this gracefully in the UI
+        flash("Warning: Brain tumor model could not be loaded. Prediction functionality will be disabled.")
 
 def allowed_file(filename):
     """Check if file has an allowed extension."""
@@ -652,6 +678,16 @@ def refresh_patients_route():
     refresh_patients_list()
     flash('Patients list has been refreshed from the database')
     return redirect(url_for('patients_list_route'))
+
+# Add an error handler for common errors
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """Handle exceptions gracefully."""
+    logger.error(f"Unhandled exception: {str(e)}", exc_info=True)
+    return render_template('error.html', 
+                          error=str(e), 
+                          title="An Error Occurred", 
+                          message="The application encountered an unexpected error."), 500
 
 if __name__ == '__main__':
     if not model_loaded:

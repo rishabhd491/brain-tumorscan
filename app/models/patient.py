@@ -3,6 +3,7 @@ import sqlite3
 import os
 import json
 import logging
+import uuid
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -10,6 +11,11 @@ logger = logging.getLogger(__name__)
 
 # Database path
 DB_PATH = os.path.join('app', 'database', 'patients.db')
+
+# If running on Render, use absolute path
+if 'RENDER' in os.environ:
+    DB_PATH = os.path.join(os.getcwd(), 'app', 'database', 'patients.db')
+    logger.info(f"Running on Render. Using database path: {DB_PATH}")
 
 # Ensure database directory exists
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
