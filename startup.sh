@@ -40,4 +40,4 @@ ls -la app/models/
 # Start the application with gunicorn
 echo "Starting application with gunicorn..."
 export PYTHONPATH=$(pwd):$PYTHONPATH
-exec gunicorn app:app 
+exec gunicorn server:app 
