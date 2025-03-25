@@ -2,6 +2,9 @@
 venv/
 env/
 ENV/
+*/venv/
+venv/*
+venv/**/*
 
 # Python cache files
 __pycache__/
@@ -60,6 +63,8 @@ logs/
 *.pth
 *.pb
 app/models/brain_tumor_classifier.h5
+**/tensorflow/libtensorflow_cc.2.dylib
+**/clang/native/libclang.dylib
 
 # Large data files
 # data/raw_datasets/ 
