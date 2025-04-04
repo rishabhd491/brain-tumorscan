@@ -87,7 +87,7 @@ TUMOR_INFO = {
             'Headaches',
             'Vision problems',
             'Hormonal imbalances causing various symptoms',
-            'Cushing's syndrome (excess cortisol)',
+            'Cushing\'s syndrome (excess cortisol)',
             'Acromegaly (excess growth hormone)',
             'Hyperthyroidism (excess thyroid hormone)'
         ],
@@ -99,9 +99,10 @@ TUMOR_INFO = {
         ],
         'prognosis': 'Most pituitary tumors are benign and have a good prognosis. Success rates depend on tumor size, type, and whether it can be completely removed.',
         'risk_factors': [
-            'Multiple endocrine neoplasia type 1 (MEN1) genetic disorder',
             'Family history of pituitary tumors',
-            'Carney complex genetic disorder'
+            'Multiple endocrine neoplasia type 1 (MEN1)',
+            'Carney complex',
+            'McCune-Albright syndrome'
         ],
         'sources': [
             'https://www.mayoclinic.org/diseases-conditions/pituitary-tumors/symptoms-causes/syc-20350548',
@@ -133,17 +134,16 @@ def get_tumor_info(tumor_type):
     Get information about a specific tumor type.
     
     Args:
-        tumor_type (str): The type of tumor ('glioma', 'meningioma', 'pituitary', or 'notumor')
+        tumor_type (str): The type of tumor (e.g., 'glioma', 'meningioma', 'pituitary')
         
     Returns:
         dict: Information about the tumor type, or None if not found
     """
-    tumor_type = tumor_type.lower() if tumor_type else 'notumor'
-    return TUMOR_INFO.get(tumor_type)
+    return TUMOR_INFO.get(tumor_type.lower())
 
 def get_all_tumor_types():
     """
-    Get a list of all tumor types.
+    Get a list of all available tumor types.
     
     Returns:
         list: List of tumor type names

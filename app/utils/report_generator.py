@@ -23,6 +23,11 @@ def generate_scan_report(patient, scan, tumor_info=None):
         bytes: PDF file as bytes
     """
     try:
+        logger.info("Starting report generation...")
+        logger.info(f"Patient data: {patient}")
+        logger.info(f"Scan data: {scan}")
+        logger.info(f"Tumor info: {tumor_info}")
+        
         # Create a buffer for the PDF
         buffer = io.BytesIO()
         
@@ -125,15 +130,22 @@ def generate_scan_report(patient, scan, tumor_info=None):
                 scan['image_path'].replace('uploads/', '')
             )
             
+            logger.info(f"Looking for image at: {image_path}")
+            
             # Check if file exists
             if os.path.exists(image_path):
-                # Add image, scaled to fit
-                img = Image(image_path)
-                img.drawHeight = 3*inch
-                img.drawWidth = 4*inch
-                elements.append(img)
-                elements.append(Spacer(1, 0.25*inch))
+                try:
+                    # Add image, scaled to fit
+                    img = Image(image_path)
+                    img.drawHeight = 3*inch
+                    img.drawWidth = 4*inch
+                    elements.append(img)
+                    elements.append(Spacer(1, 0.25*inch))
+                except Exception as e:
+                    logger.error(f"Error adding image to PDF: {str(e)}")
+                    elements.append(Paragraph("Error loading scan image.", normal_style))
             else:
+                logger.error(f"Image file not found at: {image_path}")
                 elements.append(Paragraph("Image file not found.", normal_style))
                 elements.append(Spacer(1, 0.25*inch))
         
@@ -174,12 +186,14 @@ def generate_scan_report(patient, scan, tumor_info=None):
         elements.append(Paragraph(disclaimer_text, normal_style))
         
         # Build the PDF
+        logger.info("Building PDF document...")
         doc.build(elements)
         
         # Get the PDF data
         pdf_data = buffer.getvalue()
         buffer.close()
         
+        logger.info("Report generated successfully")
         return pdf_data
     
     except Exception as e:
