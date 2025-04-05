@@ -1,39 +1,46 @@
-# Brain Tumor Detection System
+# 🧠 Brain Tumor Detection System
+
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+[![Flask](https://img.shields.io/badge/Flask-2.3.3-green.svg)](https://flask.palletsprojects.com/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.13.0-orange.svg)](https://www.tensorflow.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A comprehensive Flask web application for brain tumor detection and classification using advanced machine learning techniques.
 
-## Overview
+## 🎥 Demo Video
+
+[![Watch the demo](https://img.shields.io/badge/YouTube-Demo-red?style=for-the-badge&logo=youtube)](https://youtu.be/tf0cf-pb3KU)
+
+## 📋 Overview
 
 This application leverages state-of-the-art convolutional neural networks to detect and classify brain tumors from MRI scans. The system provides accurate classification into four categories:
-- Glioma
-- Meningioma
-- Pituitary
-- No Tumor
 
-#Video Demo
-[![Brain Tumor Detection System Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID_HERE/0.jpg)](https://youtu.be/tf0cf-pb3KU?v=YOUR_VIDEO_ID_HERE)
+- 🧠 Glioma
+- 🧠 Meningioma
+- 🧠 Pituitary
+- 🧠 No Tumor
 
-## Key Features
+## ✨ Key Features
 
-### Image Analysis
-- Upload and analyze MRI scan images in various formats
-- Real-time tumor detection and classification
-- Confidence score visualization
-- Detailed scan analysis reports
+### 🖼️ Image Analysis
+- 📤 Upload and analyze MRI scan images in various formats
+- ⚡ Real-time tumor detection and classification
+- 📊 Confidence score visualization
+- 📝 Detailed scan analysis reports
 
-### Patient Management
-- Secure patient data storage
-- Historical scan tracking
-- Comprehensive patient profiles
-- Report generation and export
+### 👥 Patient Management
+- 🔒 Secure patient data storage
+- 📅 Historical scan tracking
+- 👤 Comprehensive patient profiles
+- 📄 Report generation and export
 
-### Advanced Features
-- Multiple training models for specialized tumor detection
-- Model improvement scripts for continuous learning
-- High-performance image processing
-- Scalable architecture for deployment
+### 🚀 Advanced Features
+- 🤖 Multiple training models for specialized tumor detection
+- 📈 Model improvement scripts for continuous learning
+- 🖥️ High-performance image processing
+- ⚙️ Scalable architecture for deployment
 
-## Technical Stack
+## 🛠️ Technical Stack
 
 - **Backend**: Python, Flask
 - **Machine Learning**: TensorFlow, Keras, scikit-learn
@@ -42,7 +49,7 @@ This application leverages state-of-the-art convolutional neural networks to det
 - **Database**: SQLite
 - **Deployment**: Render, Gunicorn
 
-## Installation Guide
+## 📦 Installation Guide
 
 ### Prerequisites
 - Python 3.8 or higher
@@ -53,8 +60,8 @@ This application leverages state-of-the-art convolutional neural networks to det
 
 1. Clone the repository:
    ```bash
-   git clone [repository-url]
-   cd brain-tumorscan-main
+   git clone https://github.com/rishabhd491/brain-tumorscan.git
+   cd brain-tumorscan
    ```
 
 2. Create and activate virtual environment:
@@ -80,7 +87,7 @@ This application leverages state-of-the-art convolutional neural networks to det
 
 5. Access the application at `http://localhost:5000`
 
-## Deployment
+## 🚀 Deployment
 
 The application is configured for deployment on Render. To deploy:
 
@@ -95,7 +102,7 @@ The application is configured for deployment on Render. To deploy:
    ./startup.sh
    ```
 
-## Model Training
+## 🤖 Model Training
 
 The project includes several specialized training scripts:
 - `meningioma_focus_train.py`: Focused training for meningioma detection
@@ -103,7 +110,7 @@ The project includes several specialized training scripts:
 - `train_model.py`: General tumor classification training
 - `improve_meningioma.py`: Model improvement and fine-tuning
 
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
@@ -111,16 +118,22 @@ The project includes several specialized training scripts:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## 💬 Support
 
 For support, please open an issue in the GitHub repository or contact the maintainers.
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
 - TensorFlow and Keras teams for the ML framework
 - Flask community for the web framework
 - Medical imaging research community
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ by <a href="https://github.com/rishabhd491">Rishabh Dubey</a></sub>
+</div>
